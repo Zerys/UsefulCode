@@ -1,0 +1,91 @@
+#-------------------------------------------------------------#
+# [] Program by: Me                                           #
+# [] Contact: My Github               					              #
+# [] Department: N/A                         				          #
+# [] Description: This program downloads files from an        #
+#    external service "Example.com".                          #
+# [] Disclaimer: Please do not change, modify or adapt any    #
+#    part of this program, as it has critical services that   #
+#    depend on this for daily usage. Thank you.               #                                                      
+#-------------------------------------------------------------#
+
+#Resource Location
+$url = 'Example.com/index.php'
+$url2 = 'Example.com/download.php'
+
+#Credentials, Plaintext for now, may move to secure hashes in the future. (Internal Use Only)
+$username = 'Username'
+$clientcode = 'clientcode'
+$password = 'password'
+
+#Filename Assembly. 
+$Filename = '/Filename'
+$FileExtension = '.zip'
+
+$FileLocation = "\\FileLocation\Downloads\"
+$FileDestination = "FileDestination"
+
+#Datetime stamping. 
+$dateformat = "yyyyMMdd"
+$Date = Get-Date -format $dateformat
+
+#Filename, used for location purposes. 
+$AssembleFileName = $Filename+$Date+$FileExtension
+
+#Library
+Add-Type -Assembly "Microsoft.VisualBasic"
+
+#Create an ie com object
+$ie = New-Object -com internetexplorer.application;
+$ie.navigate($url);
+$ie.visible = $true;
+$ie.fullscreen = $true
+
+#Fullscreen process
+While ($ie.Busy) { Sleep -m 10 }
+$ieProc = Get-Process | ? { $_.MainWindowHandle -eq $ie.HWND }
+[Microsoft.VisualBasic.Interaction]::AppActivate($ieProc.Id)
+          
+# Add login details
+$usernameField = $ie.Document.getElementById("username")
+$usernameField.value = $username
+$clientcodeField = $ie.Document.getElementById("clientcode")
+$clientcodeField.value = $clientcode
+$passwordField = $ie.Document.getElementById("password")
+$passwordField.value = $password
+
+            # Click the Login button
+            $submitButton2 = $ie.document.getElementsByTagName("input") 
+            Foreach($element in $submitButton2 )
+            {
+                if($element.value -eq "Login")
+                {
+                    Write-Host $element.click()
+                    Start-Sleep -Seconds 2;
+                    $ie.navigate($url2);
+                    Start-Sleep -Seconds 2;
+
+                    #Click the get files button.
+                    $submitButton = $ie.document.getElementsByTagName("input") 
+                    Foreach($element in $submitButton )
+                    {
+                        if($element.value -eq "Get Files")
+                        {
+                            Write-Host $element.click()
+                            Start-Sleep -Seconds 2;
+                            #Save files
+                            $obj = new-object -com WScript.Shell
+						    $obj.AppActivate('Internet Explorer')
+                            Start-Sleep -Seconds 1;
+                            $obj.SendKeys('{TAB 2}')
+                            Start-Sleep -Seconds 1;
+                            $obj.SendKeys('{Enter}')
+                            Start-Sleep -Seconds 4;
+                            #Exit Program
+						    $obj.SendKeys('%{F4}')
+                            #Move Files
+                            move $FileLocation$AssembleFileName $FileDestination
+                        }
+                    }
+                }
+            }
