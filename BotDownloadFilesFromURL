@@ -1,7 +1,7 @@
 #-------------------------------------------------------------#
 # [] Program by: Me                                           #
-# [] Contact: My Github               					              #
-# [] Department: N/A                         				          #
+# [] Contact: My Github               			      #
+# [] Department: N/A                         		      #
 # [] Description: This program downloads files from an        #
 #    external service "Example.com".                          #
 # [] Disclaimer: Please do not change, modify or adapt any    #
@@ -10,19 +10,20 @@
 #-------------------------------------------------------------#
 
 #Resource Location
-$url = 'Example.com/index.php'
-$url2 = 'Example.com/download.php'
+$url = 'example.com/index.php'
+$url2 = 'example.com/download.php'
 
 #Credentials, Plaintext for now, may move to secure hashes in the future. (Internal Use Only)
-$username = 'Username'
+$username = 'username'
 $clientcode = 'clientcode'
 $password = 'password'
 
 #Filename Assembly. 
-$Filename = '/Filename'
+$Filename = 'Filename'
 $FileExtension = '.zip'
 
-$FileLocation = "\\FileLocation\Downloads\"
+#To-Do
+$FileLocation = "\\FileLocation\"
 $FileDestination = "FileDestination"
 
 #Datetime stamping. 
@@ -53,7 +54,7 @@ $clientcodeField = $ie.Document.getElementById("clientcode")
 $clientcodeField.value = $clientcode
 $passwordField = $ie.Document.getElementById("password")
 $passwordField.value = $password
-
+try {
             # Click the Login button
             $submitButton2 = $ie.document.getElementsByTagName("input") 
             Foreach($element in $submitButton2 )
@@ -64,7 +65,8 @@ $passwordField.value = $password
                     Start-Sleep -Seconds 2;
                     $ie.navigate($url2);
                     Start-Sleep -Seconds 2;
-
+                
+                  
                     #Click the get files button.
                     $submitButton = $ie.document.getElementsByTagName("input") 
                     Foreach($element in $submitButton )
@@ -75,17 +77,47 @@ $passwordField.value = $password
                             Start-Sleep -Seconds 2;
                             #Save files
                             $obj = new-object -com WScript.Shell
-						    $obj.AppActivate('Internet Explorer')
+			    $obj.AppActivate('Internet Explorer')
                             Start-Sleep -Seconds 1;
                             $obj.SendKeys('{TAB 2}')
                             Start-Sleep -Seconds 1;
                             $obj.SendKeys('{Enter}')
                             Start-Sleep -Seconds 4;
                             #Exit Program
-						    $obj.SendKeys('%{F4}')
+                            $obj.SendKeys('%{F4}')
+                            try
+                            {
+                                $WantFile = 'WantFile'+$AssembleFileName
+                                $WantFile
+                                $FileExists = Test-Path $WantFile
+                                If ($FileExists -eq $True) 
+                                {
+                                    move $FileLocation$AssembleFileName $FileDestination
+                                    Write-Host "Moved File to ****"
+                                    Exit 1
+                                }
+                                Else 
+                                {
+                                    Write-Host "No file at this location"
+                                    Exit 0
+                                }
+
+                            }
+                            catch
+                            {
+                                #catch [MoveFileInfoItemIOError,Microsoft.PowerShell.Commands.MoveItemCommand]
+                                Exit 0 
+                            }
+                            #Start-Sleep -Seconds 1;
                             #Move Files
-                            move $FileLocation$AssembleFileName $FileDestination
-                        }
-                    }
+                          }			    
+                       }
+                   }
                 }
             }
+	    catch
+	    {
+	    catch [System.Runtime.InteropServices.COMException]
+            catch [CommandNotFoundException]
+	    }
+
